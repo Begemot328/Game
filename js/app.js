@@ -1,35 +1,29 @@
-'use strict';
+let totalShots = 0;
+let successfulShots = 0;
+const aimQuantity = 5;
+let aimSize = 100;
+const sceneryBack = document.querySelector('#scenery-back');
+const scenery = document.querySelector('#scenery');
+const sampleAim = document.querySelector('#sample-aim');
 
-var totalShots = 0;
-var successfulShots = 0;
-var aimQuantity = 5;
-var aimSize = 100;
-var sceneryBack = document.querySelector('#scenery-back');
-var scenery = document.querySelector('#scenery');
-var sampleAim = document.querySelector('#sample-aim');
 
 function removeAims() {
-  document.querySelectorAll(".aim").forEach(function (o) {
-    return o.remove();
-  });
+  document.querySelectorAll(".aim").forEach(o => o.remove())
 }
 
 function placeAims() {
   removeAims();
-  var maxWidth = sceneryBack.width - aimSize;
-  var maxHeight = sceneryBack.height - aimSize;
 
-  console.log(sceneryBack.height);
-  console.log(sceneryBack.clientHeight);
-  console.log(sceneryBack.naturalHeight);
+  const maxWidth = sceneryBack.width - aimSize;
+  const maxHeight = sceneryBack.height - aimSize;
 
-  for (var i = 0; i < aimQuantity; i++) {
+  for (let i = 0; i < aimQuantity; i++) {
     scenery.appendChild(createAimBySample(Math.random() * maxHeight, Math.random() * maxWidth));
   }
 }
 
 function createAim() {
-  var newNode = document.createElement('img');
+  let newNode = document.createElement('img');
 
   newNode.setAttribute('src', "img/aim-target-svgrepo-com.svg");
   newNode.setAttribute('class', "aim");
@@ -55,7 +49,7 @@ function changeAimsSize(size) {
 }
 
 function createAimBySample(top, left) {
-  var newNode = sampleAim.cloneNode(true);
+  let newNode = sampleAim.cloneNode(true);
   newNode.removeAttribute('id');
 
   newNode.classList.add('aim');
@@ -92,7 +86,7 @@ function check() {
   setAccuracy(calculateAccuracy(successfulShots, totalShots).toFixed(2));
 
   if (document.querySelectorAll(".aim").length === 0) {
-    endGame();
+    endGame()
   }
 }
 
@@ -101,7 +95,7 @@ function calculateAccuracy(successfulShots, totalShots) {
 }
 
 function setAccuracy(accuracy) {
-  document.querySelector("#accuracy").innerHTML = 'Your accuracy is ' + accuracy + '%';
+  document.querySelector("#accuracy").innerHTML = `Your accuracy is ${accuracy}%`;
 }
 
 function endGame() {
@@ -118,6 +112,6 @@ function restartGame() {
 
 function alertUser() {
   window.setTimeout(function () {
-    alert('That\'s all, Folks!');
+    alert('That\'s all, Folks!')
   }, 500);
 }

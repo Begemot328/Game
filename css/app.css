@@ -1,0 +1,40 @@
+
+body {
+
+}
+
+h1, h2 {
+  color: aliceblue;
+}
+
+div {
+  block-align: center;
+}
+
+.game-mode {
+  background-color: darkslateblue;
+}
+
+.endgame-mode {
+  background-color: darkred;
+}
+
+.menu-button {
+  margin: 0 5% 0 5%;
+  display: inline-block;
+  position: relative;
+}
+
+.scenery {
+  width: 100%;
+  max-width: 1000px;
+  height: auto;
+  position: absolute;
+  border-radius: 50px;
+  border-image-width: 10px;
+  border: solid white;
+}
+
+.aim {
+  position: absolute;
+}
