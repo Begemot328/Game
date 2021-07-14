@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+
+<head>
+
+    <link rel="stylesheet" href="css/app.css">
+
+</head>
+
+<body class="game-mode" onload="placeAims()">
+<div class="menu-button" style="margin: 0 5% 0 0%;">
+  <h1>The game is a game</h1>
+  <h2 id="accuracy"> Your accuracy is unknown </h2>
+</div>
+<div class="menu-button">
+  <select id="complexity" name="Complexity level" style="display: inline-block; font-size: large"
+          onchange="changeAimsSize(this.value)">
+    <option value="100">1</option>
+    <option value="50">2</option>
+    <option value="20">3</option>
+  </select>
+  <label for="complexity" style="display: inline-block"><h2>Level</h2></label>
+</div>
+
+<div class="menu-button">
+  <h2>Current time:</h2>
+</div>
+<div id="scenery" style="position: relative">
+  <img id="scenery-back" class="scenery" src="img/scenery.jpg"
+       onclick="shootMissed()">
+
+  <img id="sample-aim" src="img/aim-target-svgrepo-com.svg" height="100"
+       style="position: absolute; display: none" onclick="shoot(this)">
+</div>
+
+<script src="https://unpkg.com/react@16.7.0/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@16.7.0/umd/react-dom.production.min.js"></script>
+
+<script src="js/app.js"></script>
+</body>
+
+</html>

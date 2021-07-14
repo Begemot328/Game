@@ -24,6 +24,7 @@ const aim = {
   left: 0
 }
 
+
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -31,12 +32,17 @@ class App extends React.Component {
     this.shotMissed = this.shotMissed.bind(this);
     this.shotAim = this.shotAim.bind(this);
     this.changeComplexity = this.changeComplexity.bind(this);
+    this.calculateAccuracy = this.calculateAccuracy.bind(this);
+    this.replaceAims = this.replaceAims.bind(this);
+    this.createAims = this.createAims.bind(this);
 
     this.state = {
       accuracy: 0,
       complexityLevel: 0,
       totalShots: 0,
       successfulShots: 0,
+      sceneryWidth: 0,
+      sceneryHeight: 0,
       aims: [
         {
           top: 0,
@@ -47,7 +53,6 @@ class App extends React.Component {
   }
 
   shotMissed() {
-    console.log('Shot missed!');
 
     this.setState((prevState) => {
       return {
@@ -55,37 +60,35 @@ class App extends React.Component {
       };
     });
 
-    this.check();
   }
 
   shotAim(aim) {
-    console.log('Shot aim!');
 
     this.setState((prevState) => {
       let aims = [...prevState.aims];
-
       return {
+        totalShots: prevState.totalShots + 1,
+        successfulShots: prevState.successfulShots + 1,
         aims: aims.filter((currentAim) => !(currentAim.left === aim.left && currentAim.top === aim.top))
       };
     });
-
-    this.check();
   }
 
   changeComplexity(level) {
-    console.log(level);
-
     this.setState((prevState) => {
       return {
         complexityLevel: level
       };
-    });
-    console.log(this.state);
+    }, this.createAims);
   }
 
   check() {
-    this.state.accuracy = calculateAccuracy(this.state.successfulShots,
-      this.state.totalShots);
+    this.setState((prevState) => {
+      return {
+        accuracy: calculateAccuracy(this.state.successfulShots,
+          this.state.totalShots, this.state.aims)
+      };
+    });
 
     if (this.state.aims.length === 0) {
       this.endGame();
@@ -104,11 +107,74 @@ class App extends React.Component {
     }, 500);
   }
 
+  calculateAccuracy() {
+    if (this.state.aims.length === 0) {
+      this.endGame();
+    }
+    return this.state.successfulShots === 0 ?
+      0 : (this.state.successfulShots * 100 / this.state.totalShots).toFixed(0);
+  }
+
+  replaceAims() {
+    const aimSize = complexity[this.state.complexityLevel].size;
+    const sceneryBack = document.getElementById('scenery-back');
+
+    if (sceneryBack.width <= aimSize
+      || sceneryBack.height <= aimSize) {
+      window.resizeTo(this.state.sceneryWidth + 100, this.state.sceneryHeight + 100);
+    } else {
+      const maxWidth = sceneryBack.width - aimSize;
+      const maxHeight = sceneryBack.height - aimSize;
+      let aims = [...this.state.aims];
+
+      aims.map(aim => {
+        aim.top = aim.top * (sceneryBack.height - aimSize) / (this.state.sceneryHeight - aimSize);
+        aim.left = aim.left * (sceneryBack.width - aimSize) / (this.state.sceneryWidth - aimSize);
+        return aim;
+      })
+      this.setState((prevState) => {
+        return {
+          aims: aims,
+          sceneryWidth: document.getElementById('scenery-back').width,
+          sceneryHeight: document.getElementById('scenery-back').height
+        };
+      });
+    }
+  }
+
+  createAims() {
+
+    window.addEventListener("resize", this.replaceAims);
+
+    const aimSize = complexity[this.state.complexityLevel].size;
+    const sceneryBack = document.getElementById('scenery-back');
+    const maxWidth = sceneryBack.width - aimSize;
+    const maxHeight = sceneryBack.height - aimSize;
+    let aims = [];
+
+    for (let i = 0; i < complexity[this.state.complexityLevel].aimQuantity; i++) {
+      aims.push({
+        top: (Math.random() * maxHeight).toFixed(0),
+        left: (Math.random() * maxWidth).toFixed(0)
+      });
+    }
+
+    this.setState((prevState) => {
+      return {
+        aims: aims,
+        sceneryWidth: document.getElementById('scenery-back').width,
+        sceneryHeight: document.getElementById('scenery-back').height
+      };
+    });
+  }
+
   render() {
     return (
       <div>
         <h1>Test</h1>
-        <Header/>
+        <Header
+          accuracy={this.calculateAccuracy()}
+        />
         <ComplexityLevel
           options={complexity}
           complexityLevel={this.state.complexityLevel}
@@ -118,11 +184,14 @@ class App extends React.Component {
 
         <div id="scenery" style={{position: "relative"}}>
           <Scenery
+            createAims={this.createAims}
+            replaceAims={this.replaceAims}
             shotMissed={this.shotMissed}
           />
           <Aims
             aims={this.state.aims}
             shotAim={this.shotAim}
+            size={complexity[this.state.complexityLevel].size}
           />
         </div>
       </div>
@@ -152,18 +221,22 @@ class Timer extends React.Component {
 }
 
 class Scenery extends React.Component {
+
   render() {
     return (
       <img id="scenery-back" className="scenery" src="/img/scenery.jpg"
-           onClick={this.props.shotMissed}/>
+           onClick={this.props.shotMissed} onLoad={this.props.createAims}
+           onresize={this.props.replaceAims}/>
     )
+
   }
 }
 
 class Aims extends React.Component {
   render() {
     return (
-      this.props.aims.map(aim => <Aim top={aim.top} left={aim.left} shotAim={this.props.shotAim}/>)
+      this.props.aims.map(aim => <Aim top={aim.top} left={aim.left} size={this.props.size}
+                                      shotAim={this.props.shotAim}/>)
     )
   }
 }
@@ -177,8 +250,6 @@ class Aim extends React.Component {
   handleClick(e) {
     e.preventDefault();
 
-
-    console.log('this ', this);
     let aim = {
       top: this.props.top,
       left: this.props.left
@@ -188,9 +259,12 @@ class Aim extends React.Component {
 
   render() {
     return (
-      <img id="sample-aim" src="/img/aim-target-svgrepo-com.svg" height="100" top={this.props.top}
-           bottom={this.props.left}
-           style={{position: "absolute"}} onClick={this.handleClick}/>
+      <img id="sample-aim" src="/img/aim-target-svgrepo-com.svg" height={this.props.size}
+           style={{
+             position: "absolute",
+             top: this.props.top + 'px',
+             left: this.props.left + 'px'
+           }} onClick={this.handleClick}/>
     )
   }
 }
@@ -205,7 +279,6 @@ class ComplexityLevel extends React.Component {
     e.preventDefault();
 
     const level = e.target.value;
-    console.log(level);
     this.props.changeComplexity(level);
   }
 
@@ -230,8 +303,5 @@ class ComplexityLevel extends React.Component {
   }
 }
 
-function calculateAccuracy(successfulShots, totalShots) {
-  return (successfulShots / totalShots * 100).toFixed(2);
-}
-
 ReactDOM.render(<App/>, document.getElementById('app2'));
+
